@@ -198,17 +198,21 @@ public class ProxyConfig {
 
     private String getDomainState(String domain) {
         domain = domain.toLowerCase();
-        if (m_DomainMap.get(domain) != null)
+        if (m_DomainMap.get(domain) != null) {
+            System.out.println("getDomainState m_DomainMap " + domain + " -> " + m_DomainMap.get(domain));
             return m_DomainMap.get(domain);
+        }
 
         for (String key : m_DomainSuffixMap.keySet()) {
             if (domain.endsWith(key)) {
+                System.out.println("getDomainState m_DomainSuffixMap " + domain + ":" + key + " -> " + m_DomainSuffixMap.get(key));
                 return m_DomainSuffixMap.get(key);
             }
         }
 
         for (String key : m_DomainKeywordMap.keySet()) {
             if (domain.contains(key)) {
+                System.out.println("getDomainState m_DomainKeywordMap " + domain + ":" + key + " -> " + m_DomainKeywordMap.get(key));
                 return m_DomainKeywordMap.get(key);
             }
         }
@@ -228,16 +232,11 @@ public class ProxyConfig {
             }
         }
 
-        if (isFakeIP(ip))
+        if (isFakeIP(ip)) {
+            System.out.println(CommonMethods.ipIntToString(ip) + " is a fake ip");
             return "proxy";
-
-        if (m_outside_china_use_proxy && ip != 0) {
-            if (ChinaIpMaskManager.isIPInChina(ip)) {
-                return "direct";
-            } else {
-                return "proxy";
-            }
         }
+
         return "direct";
     }
 

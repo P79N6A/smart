@@ -162,15 +162,13 @@ public class LocalVpnService extends VpnService implements Runnable {
         try {
             System.out.printf("VPNService(%s) work thread is runing...\n", ID);
 
-            ProxyConfig.AppInstallID = getAppInstallID();//获取安装ID
-            ProxyConfig.AppVersion = getVersionName();//获取版本号
+            ProxyConfig.AppInstallID = getAppInstallID();// 获取安装ID
+            ProxyConfig.AppVersion = getVersionName();// 获取版本号
             System.out.printf("AppInstallID: %s\n", ProxyConfig.AppInstallID);
             writeLog("Android version: %s", Build.VERSION.RELEASE);
             writeLog("App version: %s", ProxyConfig.AppVersion);
 
-
-            ChinaIpMaskManager.loadFromFile(getResources().openRawResource(R.raw.ipmask));//加载中国的IP段，用于IP分流。
-            waitUntilPreapred();//检查是否准备完毕。
+            waitUntilPreapred();// 检查是否准备完毕
 
             writeLog("Load config from file ...");
             try {

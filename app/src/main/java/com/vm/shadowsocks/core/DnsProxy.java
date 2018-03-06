@@ -84,7 +84,7 @@ public class DnsProxy implements Runnable {
                 try {
                     DnsPacket dnsPacket = DnsPacket.FromBytes(dnsBuffer);
                     if (dnsPacket != null) {
-                        OnDnsResponseReceived(ipHeader, udpHeader, dnsPacket);
+                        onDnsResponseReceived(ipHeader, udpHeader, dnsPacket);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -147,6 +147,8 @@ public class DnsProxy implements Runnable {
             Question question = dnsPacket.Questions[0];
             if (question.Type == 1) {
                 int realIP = getFirstIP(dnsPacket);
+
+                // 此时needProxy域名和对应的ip解析都存在
                 if (ProxyConfig.Instance.needProxy(question.Domain, realIP).equals("proxy")) {
                     int fakeIP = getOrCreateFakeIP(question.Domain);
                     tamperDnsResponse(rawPacket, dnsPacket, fakeIP);
@@ -159,7 +161,7 @@ public class DnsProxy implements Runnable {
         return false;
     }
 
-    private void OnDnsResponseReceived(IPHeader ipHeader, UDPHeader udpHeader, DnsPacket dnsPacket) {
+    private void onDnsResponseReceived(IPHeader ipHeader, UDPHeader udpHeader, DnsPacket dnsPacket) {
         QueryState state = null;
         synchronized (m_QueryArray) {
             state = m_QueryArray.get(dnsPacket.Header.ID);
@@ -169,9 +171,9 @@ public class DnsProxy implements Runnable {
         }
 
         if (state != null) {
-            //DNS污染，默认污染海外网站
+            // DNS污染，默认污染海外网站
             if (ProxyConfig.IS_DEBUG)
-                System.out.println("OnDnsResponseReceived: " + CommonMethods.ipIntToString(state.RemoteIP) + ":" + state.RemotePort + "<->" + CommonMethods.ipIntToString(state.ClientIP) + ":" + state.ClientPort);
+                System.out.println("onDnsResponseReceived: " + CommonMethods.ipIntToString(state.RemoteIP) + ":" + state.RemotePort + "<->" + CommonMethods.ipIntToString(state.ClientIP) + ":" + state.ClientPort);
             dnsPollution(udpHeader.m_Data, dnsPacket);
 
             dnsPacket.Header.setID(state.ClientQueryID);
@@ -200,6 +202,7 @@ public class DnsProxy implements Runnable {
         Question question = dnsPacket.Questions[0];
         // Requests the A record for the domain name
         if (question.Type == 1) {
+            // 此时needProxy只有域名存在，如果cache里面有，那么都存在
             String action = ProxyConfig.Instance.needProxy(question.Domain, getIPFromCache(question.Domain));
             if (action.equals("proxy")) {
                 int fakeIP = getOrCreateFakeIP(question.Domain);
@@ -263,6 +266,20 @@ public class DnsProxy implements Runnable {
             packet.setSocketAddress(remoteAddress);
 
             try {
+                /**
+                 * Protect a socket from VPN connections. After protecting, data sent
+                 * through this socket will go directly to the underlying network,
+                 * so its traffic will not be forwarded through the VPN.
+                 * This method is useful if some connections need to be kept
+                 * outside of VPN. For example, a VPN tunnel should protect itself if its
+                 * destination is covered by VPN routes. Otherwise its outgoing packets
+                 * will be sent back to the VPN interface and cause an infinite loop. This
+                 * method will fail if the application is not prepared or is revoked.
+                 *
+                 * <p class="note">The socket is NOT closed by this method.
+                 *
+                 * @return {@code true} on success.
+                 */
                 if (LocalVpnService.Instance.protect(m_Client)) {
                     m_Client.send(packet);
                 } else {
