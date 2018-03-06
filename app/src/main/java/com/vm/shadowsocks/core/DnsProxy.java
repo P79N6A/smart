@@ -147,8 +147,7 @@ public class DnsProxy implements Runnable {
             Question question = dnsPacket.Questions[0];
             if (question.Type == 1) {
                 int realIP = getFirstIP(dnsPacket);
-                // FIXME
-                if (ProxyConfig.Instance.needProxy(question.Domain, realIP)) {
+                if (ProxyConfig.Instance.needProxy(question.Domain, realIP).equals("proxy")) {
                     int fakeIP = getOrCreateFakeIP(question.Domain);
                     tamperDnsResponse(rawPacket, dnsPacket, fakeIP);
                     if (ProxyConfig.IS_DEBUG)
@@ -199,9 +198,10 @@ public class DnsProxy implements Runnable {
 
     private boolean interceptDns(IPHeader ipHeader, UDPHeader udpHeader, DnsPacket dnsPacket) {
         Question question = dnsPacket.Questions[0];
+        // Requests the A record for the domain name
         if (question.Type == 1) {
-            // FIXME
-            if (ProxyConfig.Instance.needProxy(question.Domain, getIPFromCache(question.Domain))) {
+            String action = ProxyConfig.Instance.needProxy(question.Domain, getIPFromCache(question.Domain));
+            if (action.equals("proxy")) {
                 int fakeIP = getOrCreateFakeIP(question.Domain);
                 tamperDnsResponse(ipHeader.m_Data, dnsPacket, fakeIP);
 
@@ -218,11 +218,9 @@ public class DnsProxy implements Runnable {
                 udpHeader.setDestinationPort(sourcePort);
                 udpHeader.setTotalLength(8 + dnsPacket.Size);
                 LocalVpnService.Instance.sendUDPPacket(ipHeader, udpHeader);
-                System.out.println("faked DNS Qeury " + question.Domain);
                 return true;
             }
         }
-        System.out.println("direct DNS Qeury " + question.Domain);
         return false;
     }
 

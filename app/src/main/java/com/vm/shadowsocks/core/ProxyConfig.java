@@ -198,28 +198,47 @@ public class ProxyConfig {
 
     private String getDomainState(String domain) {
         domain = domain.toLowerCase();
-        return m_DomainMap.get(domain);
+        if (m_DomainMap.get(domain) != null)
+            return m_DomainMap.get(domain);
+
+        for (String key : m_DomainSuffixMap.keySet()) {
+            if (domain.endsWith(key)) {
+                return m_DomainSuffixMap.get(key);
+            }
+        }
+
+        for (String key : m_DomainKeywordMap.keySet()) {
+            if (domain.contains(key)) {
+                return m_DomainKeywordMap.get(key);
+            }
+        }
+
+        return null;
     }
 
-    public boolean needProxy(String host, int ip) {
-        if (globalMode) {
-            return true;
-        }
+    public String needProxy(String host, int ip) {
+        if (globalMode)
+            return "proxy"; // TODO block
+
         if (host != null) {
             String action = getDomainState(host);
 
-            if (action != null && action.equals("proxy")) {
-                return true;
+            if (action != null) {
+                return action;
             }
         }
 
         if (isFakeIP(ip))
-            return true;
+            return "proxy";
 
         if (m_outside_china_use_proxy && ip != 0) {
-            return !ChinaIpMaskManager.isIPInChina(ip);
+            if (ChinaIpMaskManager.isIPInChina(ip)) {
+                return "direct";
+            } else {
+                return "proxy";
+            }
         }
-        return false;
+        return "direct";
     }
 
     public boolean isIsolateHttpHostHeader() {
@@ -321,21 +340,21 @@ public class ProxyConfig {
                     } else if (tagString.equals("direct_domain")) {
                         addDomainToHashMap(items, 1, "direct");
                     } else if (tagString.equals("direct_domain_keyword")) {
-                        // addDomainToHashMap(items, 1, false); TODO
+                        addDomainKeywordToHashMap(items, 1, "direct");
                     } else if (tagString.equals("direct_domain_suffix")) {
-                        // addDomainToHashMap(items, 1, false); TODO
+                        addDomainSuffixToHashMap(items, 1, "direct");
                     } else if (tagString.equals("proxy_domain")) {
                         addDomainToHashMap(items, 1, "proxy");
                     } else if (tagString.equals("proxy_domain_keyword")) {
-                        // addDomainToHashMap(items, 1, true); TODO
+                        addDomainKeywordToHashMap(items, 1, "proxy");
                     } else if (tagString.equals("proxy_domain_suffix")) {
-                        // addDomainToHashMap(items, 1, true); TODO
+                        addDomainSuffixToHashMap(items, 1, "proxy");
                     } else if (tagString.equals("block_domain")) {
-                        // addDomainToHashMap(items, 1, true); TODO
+                        addDomainToHashMap(items, 1, "block");
                     } else if (tagString.equals("block_domain_keyword")) {
-                        // addDomainToHashMap(items, 1, true); TODO
+                        addDomainKeywordToHashMap(items, 1, "block");
                     } else if (tagString.equals("block_domain_suffix")) {
-                        // addDomainToHashMap(items, 1, true); TODO
+                        addDomainSuffixToHashMap(items, 1, "block");
                     } else if (tagString.equals("dns_ttl")) {
                         m_dns_ttl = Integer.parseInt(items[1]);
                     } else if (tagString.equals("welcome_info")) {
@@ -408,6 +427,26 @@ public class ProxyConfig {
                 domainString = domainString.substring(1);
             }
             m_DomainMap.put(domainString, state);
+        }
+    }
+
+    private void addDomainKeywordToHashMap(String[] items, int offset, String state) {
+        for (int i = offset; i < items.length; i++) {
+            String domainString = items[i].toLowerCase().trim();
+            if (domainString.charAt(0) == '.') {
+                domainString = domainString.substring(1);
+            }
+            m_DomainKeywordMap.put(domainString, state);
+        }
+    }
+
+    private void addDomainSuffixToHashMap(String[] items, int offset, String state) {
+        for (int i = offset; i < items.length; i++) {
+            String domainString = items[i].toLowerCase().trim();
+            if (domainString.charAt(0) == '.') {
+                domainString = domainString.substring(1);
+            }
+            m_DomainSuffixMap.put(domainString, state);
         }
     }
 
