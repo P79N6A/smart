@@ -339,22 +339,26 @@ public class LocalVpnService extends VpnService implements Runnable {
 
     private ParcelFileDescriptor establishVPN() throws Exception {
         Builder builder = new Builder();
+        // MTU
         builder.setMtu(ProxyConfig.Instance.getMTU());
         if (ProxyConfig.IS_DEBUG)
             System.out.printf("setMtu: %d\n", ProxyConfig.Instance.getMTU());
 
+        // ip address
         IPAddress ipAddress = ProxyConfig.Instance.getDefaultLocalIP();
         LOCAL_IP = CommonMethods.ipStringToInt(ipAddress.Address);
         builder.addAddress(ipAddress.Address, ipAddress.PrefixLength);
         if (ProxyConfig.IS_DEBUG)
             System.out.printf("addAddress: %s/%d\n", ipAddress.Address, ipAddress.PrefixLength);
 
+        // dns
         for (ProxyConfig.IPAddress dns : ProxyConfig.Instance.getDnsList()) {
             builder.addDnsServer(dns.Address);
             if (ProxyConfig.IS_DEBUG)
                 System.out.printf("addDnsServer: %s\n", dns.Address);
         }
 
+        // 添加路由
         if (ProxyConfig.Instance.getRouteList().size() > 0) {
             for (ProxyConfig.IPAddress routeAddress : ProxyConfig.Instance.getRouteList()) {
                 builder.addRoute(routeAddress.Address, routeAddress.PrefixLength);
@@ -372,6 +376,7 @@ public class LocalVpnService extends VpnService implements Runnable {
         }
 
 
+        // 设置dns
         Class<?> SystemProperties = Class.forName("android.os.SystemProperties");
         Method method = SystemProperties.getMethod("get", new Class[]{String.class});
         ArrayList<String> servers = new ArrayList<String>();
