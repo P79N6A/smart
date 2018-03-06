@@ -198,10 +198,7 @@ public class ProxyConfig {
 
     private String getDomainState(String domain) {
         domain = domain.toLowerCase();
-        while (domain.length() > 0) {
-            return m_DomainMap.get(domain);
-        }
-        return null;
+        return m_DomainMap.get(domain);
     }
 
     public boolean needProxy(String host, int ip) {
@@ -210,7 +207,8 @@ public class ProxyConfig {
         }
         if (host != null) {
             String action = getDomainState(host);
-            if (action.equals("proxy")) {
+
+            if (action != null && action.equals("proxy")) {
                 return true;
             }
         }
