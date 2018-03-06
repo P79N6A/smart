@@ -171,6 +171,8 @@ public class DnsProxy implements Runnable {
 
         if (state != null) {
             //DNS污染，默认污染海外网站
+            if (ProxyConfig.IS_DEBUG)
+                System.out.println("OnDnsResponseReceived: " + CommonMethods.ipIntToString(state.RemoteIP) + ":" + state.RemotePort + "<->" + CommonMethods.ipIntToString(state.ClientIP) + ":" + state.ClientPort);
             dnsPollution(udpHeader.m_Data, dnsPacket);
 
             dnsPacket.Header.setID(state.ClientQueryID);
@@ -206,6 +208,7 @@ public class DnsProxy implements Runnable {
                 if (ProxyConfig.IS_DEBUG)
                     System.out.printf("interceptDns FakeDns: %s=>%s\n", question.Domain, CommonMethods.ipIntToString(fakeIP));
 
+                // 返回fake ip
                 int sourceIP = ipHeader.getSourceIP();
                 short sourcePort = udpHeader.getSourcePort();
                 ipHeader.setSourceIP(ipHeader.getDestinationIP());
@@ -236,6 +239,8 @@ public class DnsProxy implements Runnable {
     public void onDnsRequestReceived(IPHeader ipHeader, UDPHeader udpHeader, DnsPacket dnsPacket) {
         // FIXME
         // 不拦截，转发dns数据包
+        if (ProxyConfig.IS_DEBUG)
+            System.out.println("onDnsRequestReceived: " + CommonMethods.ipIntToString(ipHeader.getSourceIP()) + ":" + udpHeader.getSourcePort() + "<->" + CommonMethods.ipIntToString(ipHeader.getDestinationIP()) + ":" + udpHeader.getDestinationPort());
         if (!interceptDns(ipHeader, udpHeader, dnsPacket)) {
             // 转发DNS
             QueryState state = new QueryState();
