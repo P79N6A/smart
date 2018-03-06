@@ -379,7 +379,7 @@ public class LocalVpnService extends VpnService implements Runnable {
             String value = (String) method.invoke(null, name);
             if (value != null && !"".equals(value) && !servers.contains(value)) {
                 servers.add(value);
-                if (value.replaceAll("\\d", "").length() == 3){//防止IPv6地址导致问题
+                if (value.replaceAll("\\d", "").length() == 3) {//防止IPv6地址导致问题
                     builder.addRoute(value, 32);
                 } else {
                     builder.addRoute(value, 128);
@@ -389,16 +389,16 @@ public class LocalVpnService extends VpnService implements Runnable {
             }
         }
 
-        if (AppProxyManager.isLollipopOrAbove){
-            if (AppProxyManager.Instance.proxyAppInfo.size() == 0){
+        if (AppProxyManager.isLollipopOrAbove) {
+            if (AppProxyManager.Instance.proxyAppInfo.size() == 0) {
                 writeLog("Proxy All Apps");
             }
-            for (AppInfo app : AppProxyManager.Instance.proxyAppInfo){
+            for (AppInfo app : AppProxyManager.Instance.proxyAppInfo) {
                 builder.addAllowedApplication("com.vm.shadowsocks");//需要把自己加入代理，不然会无法进行网络连接
-                try{
+                try {
                     builder.addAllowedApplication(app.getPkgName());
                     writeLog("Proxy App: " + app.getAppLabel());
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     writeLog("Proxy App Fail: " + app.getAppLabel());
                 }

@@ -14,7 +14,7 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:paddingTop="2dp"
-        android:paddingBottom="2dp"/>
+        android:paddingBottom="2dp" />
 
     <Switch
         android:id="@+id/itemcheck"
@@ -28,6 +28,6 @@
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:clickable="false"
-        android:layout_marginEnd="16dp"/>
+        android:layout_marginEnd="16dp" />
 
 </LinearLayout>

@@ -40,7 +40,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
  * Created by so898 on 2017/5/3.
  */
 
-public class AppManager extends Activity{
+public class AppManager extends Activity {
     private View loadingView;
     private RecyclerView appListView;
     private FastScroller fastScroller;
@@ -56,10 +56,10 @@ public class AppManager extends Activity{
             actionBar.setDisplayHomeAsUpEnabled(true);
 
         loadingView = findViewById(R.id.loading);
-        appListView = (RecyclerView)findViewById(R.id.list);
+        appListView = (RecyclerView) findViewById(R.id.list);
         appListView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         appListView.setItemAnimator(new DefaultItemAnimator());
-        fastScroller = (FastScroller)findViewById(R.id.fastscroller);
+        fastScroller = (FastScroller) findViewById(R.id.fastscroller);
 
         Observable<List<AppInfo>> observable = Observable.create(new ObservableOnSubscribe<List<AppInfo>>() {
             @Override
@@ -71,13 +71,16 @@ public class AppManager extends Activity{
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
         Observer<List<AppInfo>> observer = new Observer<List<AppInfo>>() {
             @Override
-            public void onSubscribe(Disposable d) {}
+            public void onSubscribe(Disposable d) {
+            }
 
             @Override
-            public void onNext(List<AppInfo> aLong) {}
+            public void onNext(List<AppInfo> aLong) {
+            }
 
             @Override
-            public void onError(Throwable e) {}
+            public void onError(Throwable e) {
+            }
 
             @Override
             public void onComplete() {
@@ -89,7 +92,8 @@ public class AppManager extends Activity{
                 appListView.animate().alpha(1).setDuration(shortAnimTime);
                 loadingView.animate().alpha(0).setDuration(shortAnimTime).setListener(new Animator.AnimatorListener() {
                     @Override
-                    public void onAnimationStart(Animator animator) {}
+                    public void onAnimationStart(Animator animator) {
+                    }
 
                     @Override
                     public void onAnimationEnd(Animator animator) {
@@ -97,10 +101,12 @@ public class AppManager extends Activity{
                     }
 
                     @Override
-                    public void onAnimationCancel(Animator animator) {}
+                    public void onAnimationCancel(Animator animator) {
+                    }
 
                     @Override
-                    public void onAnimationRepeat(Animator animator) {}
+                    public void onAnimationRepeat(Animator animator) {
+                    }
                 });
             }
         };
@@ -143,8 +149,8 @@ public class AppManager extends Activity{
 }
 
 class AppViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-    private ImageView icon = (ImageView)itemView.findViewById(R.id.itemicon);
-    private Switch check = (Switch)itemView.findViewById(R.id.itemcheck);
+    private ImageView icon = (ImageView) itemView.findViewById(R.id.itemicon);
+    private Switch check = (Switch) itemView.findViewById(R.id.itemcheck);
     private AppInfo item;
     private Boolean proxied = false;
 

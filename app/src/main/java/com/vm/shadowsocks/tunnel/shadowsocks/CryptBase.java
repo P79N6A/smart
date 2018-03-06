@@ -60,7 +60,7 @@ public abstract class CryptBase implements ICrypt {
 
     protected abstract void _decrypt(byte[] data, ByteArrayOutputStream stream);
 
-    protected CipherParameters getCipherParameters(byte[] iv){
+    protected CipherParameters getCipherParameters(byte[] iv) {
         _decryptIV = new byte[_ivLength];
         System.arraycopy(iv, 0, _decryptIV, 0, _ivLength);
         return new ParametersWithIV(new KeyParameter(_key.getEncoded()), _decryptIV);

@@ -80,7 +80,7 @@ public class MainActivity extends Activity implements
         LocalVpnService.addOnStatusChangedListener(this);
 
         //Pre-App Proxy
-        if (AppProxyManager.isLollipopOrAbove){
+        if (AppProxyManager.isLollipopOrAbove) {
             new AppProxyManager(this);
             textViewProxyApp = (TextView) findViewById(R.id.textViewAppSelectDetail);
         } else {
@@ -142,7 +142,7 @@ public class MainActivity extends Activity implements
             return;
         }
 
-        if (v.getTag().toString().equals("ProxyUrl")){
+        if (v.getTag().toString().equals("ProxyUrl")) {
             new AlertDialog.Builder(this)
                     .setTitle(R.string.config_url)
                     .setItems(new CharSequence[]{
@@ -162,7 +162,7 @@ public class MainActivity extends Activity implements
                         }
                     })
                     .show();
-        } else if (v.getTag().toString().equals("AppSelect")){
+        } else if (v.getTag().toString().equals("AppSelect")) {
             System.out.println("abc");
             startActivity(new Intent(this, AppManager.class));
         }
