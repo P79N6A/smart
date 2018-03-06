@@ -76,7 +76,6 @@ public class DnsProxy implements Runnable {
             DatagramPacket packet = new DatagramPacket(RECEIVE_BUFFER, 28, RECEIVE_BUFFER.length - 28);
 
             while (m_Client != null && !m_Client.isClosed()) {
-
                 packet.setLength(RECEIVE_BUFFER.length - 28);
                 m_Client.receive(packet);
 
@@ -149,6 +148,7 @@ public class DnsProxy implements Runnable {
             Question question = dnsPacket.Questions[0];
             if (question.Type == 1) {
                 int realIP = getFirstIP(dnsPacket);
+                // FIXME
                 if (ProxyConfig.Instance.needProxy(question.Domain, realIP)) {
                     int fakeIP = getOrCreateFakeIP(question.Domain);
                     tamperDnsResponse(rawPacket, dnsPacket, fakeIP);
@@ -198,8 +198,8 @@ public class DnsProxy implements Runnable {
 
     private boolean interceptDns(IPHeader ipHeader, UDPHeader udpHeader, DnsPacket dnsPacket) {
         Question question = dnsPacket.Questions[0];
-        System.out.println("DNS Qeury " + question.Domain);
         if (question.Type == 1) {
+            // FIXME
             if (ProxyConfig.Instance.needProxy(question.Domain, getIPFromCache(question.Domain))) {
                 int fakeIP = getOrCreateFakeIP(question.Domain);
                 tamperDnsResponse(ipHeader.m_Data, dnsPacket, fakeIP);
@@ -216,9 +216,11 @@ public class DnsProxy implements Runnable {
                 udpHeader.setDestinationPort(sourcePort);
                 udpHeader.setTotalLength(8 + dnsPacket.Size);
                 LocalVpnService.Instance.sendUDPPacket(ipHeader, udpHeader);
+                System.out.println("faked DNS Qeury " + question.Domain);
                 return true;
             }
         }
+        System.out.println("direct DNS Qeury " + question.Domain);
         return false;
     }
 
@@ -233,8 +235,10 @@ public class DnsProxy implements Runnable {
     }
 
     public void onDnsRequestReceived(IPHeader ipHeader, UDPHeader udpHeader, DnsPacket dnsPacket) {
+        // FIXME
+        // 不拦截，转发dns数据包
         if (!interceptDns(ipHeader, udpHeader, dnsPacket)) {
-            //转发DNS
+            // 转发DNS
             QueryState state = new QueryState();
             state.ClientQueryID = dnsPacket.Header.ID;
             state.QueryNanoTime = System.nanoTime();
@@ -248,7 +252,7 @@ public class DnsProxy implements Runnable {
             dnsPacket.Header.setID(m_QueryID);
 
             synchronized (m_QueryArray) {
-                clearExpiredQueries();//清空过期的查询，减少内存开销。
+                clearExpiredQueries();// 清空过期的查询，减少内存开销。
                 m_QueryArray.put(m_QueryID, state);// 关联数据
             }
 

@@ -202,7 +202,6 @@ public class LocalVpnService extends VpnService implements Runnable {
                         ProxyConfig.Instance.addProxyToList(ProxyUrl);
                         writeLog("Proxy is: %s", ProxyConfig.Instance.getDefaultProxy());
                     } catch (Exception e) {
-                        ;
                         String errString = e.getMessage();
                         if (errString == null || errString.isEmpty()) {
                             errString = e.toString();
@@ -252,6 +251,12 @@ public class LocalVpnService extends VpnService implements Runnable {
         disconnectVPN();
     }
 
+    /**
+     * 收到ip数据包
+     * @param ipHeader
+     * @param size
+     * @throws IOException
+     */
     void onIPPacketReceived(IPHeader ipHeader, int size) throws IOException {
         switch (ipHeader.getProtocol()) {
             case IPHeader.TCP:
@@ -281,14 +286,14 @@ public class LocalVpnService extends VpnService implements Runnable {
                         }
 
                         session.LastNanoTime = System.nanoTime();
-                        session.PacketSent++;//注意顺序
+                        session.PacketSent++;// 注意顺序
 
                         int tcpDataSize = ipHeader.getDataLength() - tcpHeader.getHeaderLength();
                         if (session.PacketSent == 2 && tcpDataSize == 0) {
-                            return;//丢弃tcp握手的第二个ACK报文。因为客户端发数据的时候也会带上ACK，这样可以在服务器Accept之前分析出HOST信息。
+                            return;// 丢弃tcp握手的第二个ACK报文。因为客户端发数据的时候也会带上ACK，这样可以在服务器Accept之前分析出HOST信息。
                         }
 
-                        //分析数据，找到host
+                        // 分析数据，找到host
                         if (session.BytesSent == 0 && tcpDataSize > 10) {
                             int dataOffset = tcpHeader.m_Offset + tcpHeader.getHeaderLength();
                             String host = HttpHostHeaderParser.parseHost(tcpHeader.m_Data, dataOffset, tcpDataSize);
@@ -312,7 +317,7 @@ public class LocalVpnService extends VpnService implements Runnable {
                 }
                 break;
             case IPHeader.UDP:
-                // 转发DNS数据包：
+                // 转发DNS数据包
                 UDPHeader udpHeader = m_UDPHeader;
                 udpHeader.m_Offset = ipHeader.getHeaderLength();
                 if (ipHeader.getSourceIP() == LOCAL_IP && udpHeader.getDestinationPort() == 53) {

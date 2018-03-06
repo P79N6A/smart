@@ -39,7 +39,10 @@ public class ProxyConfig {
     ArrayList<IPAddress> m_DnsList;
     ArrayList<IPAddress> m_RouteList;
     public ArrayList<Config> m_ProxyList;
-    HashMap<String, Boolean> m_DomainMap;
+
+    HashMap<String, String> m_DomainMap; // 完全匹配
+    HashMap<String, String> m_DomainKeywordMap; // 关键词匹配
+    HashMap<String, String> m_DomainSuffixMap; // 前缀匹配
 
     public boolean globalMode = false;
 
@@ -94,7 +97,9 @@ public class ProxyConfig {
         m_DnsList = new ArrayList<IPAddress>();
         m_RouteList = new ArrayList<IPAddress>();
         m_ProxyList = new ArrayList<Config>();
-        m_DomainMap = new HashMap<String, Boolean>();
+        m_DomainMap = new HashMap<String, String>();
+        m_DomainKeywordMap = new HashMap<String, String>();
+        m_DomainSuffixMap = new HashMap<String, String>();
 
         m_Timer = new Timer();
         m_Timer.schedule(m_Task, 120000, 120000);//每两分钟刷新一次。
@@ -191,20 +196,10 @@ public class ProxyConfig {
         }
     }
 
-    private Boolean getDomainState(String domain) {
+    private String getDomainState(String domain) {
         domain = domain.toLowerCase();
         while (domain.length() > 0) {
-            Boolean stateBoolean = m_DomainMap.get(domain);
-            if (stateBoolean != null) {
-                return stateBoolean;
-            } else {
-                int start = domain.indexOf('.') + 1;
-                if (start > 0 && start < domain.length()) {
-                    domain = domain.substring(start);
-                } else {
-                    return null;
-                }
-            }
+            return m_DomainMap.get(domain);
         }
         return null;
     }
@@ -214,9 +209,9 @@ public class ProxyConfig {
             return true;
         }
         if (host != null) {
-            Boolean stateBoolean = getDomainState(host);
-            if (stateBoolean != null) {
-                return stateBoolean.booleanValue();
+            String action = getDomainState(host);
+            if (action.equals("proxy")) {
+                return true;
             }
         }
 
@@ -300,6 +295,8 @@ public class ProxyConfig {
         m_RouteList.clear();
         m_ProxyList.clear();
         m_DomainMap.clear();
+        m_DomainKeywordMap.clear();
+        m_DomainSuffixMap.clear();
 
         int lineNumber = 0;
         for (String line : lines) {
@@ -324,9 +321,23 @@ public class ProxyConfig {
                     } else if (tagString.equals("proxy")) {
                         addProxyToList(items, 1);
                     } else if (tagString.equals("direct_domain")) {
-                        addDomainToHashMap(items, 1, false);
+                        addDomainToHashMap(items, 1, "direct");
+                    } else if (tagString.equals("direct_domain_keyword")) {
+                        // addDomainToHashMap(items, 1, false); TODO
+                    } else if (tagString.equals("direct_domain_suffix")) {
+                        // addDomainToHashMap(items, 1, false); TODO
                     } else if (tagString.equals("proxy_domain")) {
-                        addDomainToHashMap(items, 1, true);
+                        addDomainToHashMap(items, 1, "proxy");
+                    } else if (tagString.equals("proxy_domain_keyword")) {
+                        // addDomainToHashMap(items, 1, true); TODO
+                    } else if (tagString.equals("proxy_domain_suffix")) {
+                        // addDomainToHashMap(items, 1, true); TODO
+                    } else if (tagString.equals("block_domain")) {
+                        // addDomainToHashMap(items, 1, true); TODO
+                    } else if (tagString.equals("block_domain_keyword")) {
+                        // addDomainToHashMap(items, 1, true); TODO
+                    } else if (tagString.equals("block_domain_suffix")) {
+                        // addDomainToHashMap(items, 1, true); TODO
                     } else if (tagString.equals("dns_ttl")) {
                         m_dns_ttl = Integer.parseInt(items[1]);
                     } else if (tagString.equals("welcome_info")) {
@@ -364,7 +375,7 @@ public class ProxyConfig {
                 config.ServerAddress = new InetSocketAddress(m.group(1), Integer.parseInt(m.group(2)));
                 if (!m_ProxyList.contains(config)) {
                     m_ProxyList.add(config);
-                    m_DomainMap.put(config.ServerAddress.getHostName(), false);
+                    m_DomainMap.put(config.ServerAddress.getHostName(), "direct");
                 }
             }
         }
@@ -382,7 +393,7 @@ public class ProxyConfig {
         }
         if (!m_ProxyList.contains(config)) {
             m_ProxyList.add(config);
-            m_DomainMap.put(config.ServerAddress.getHostName(), false);
+            m_DomainMap.put(config.ServerAddress.getHostName(), "direct");
         }
     }
 
@@ -392,7 +403,7 @@ public class ProxyConfig {
         }
     }
 
-    private void addDomainToHashMap(String[] items, int offset, Boolean state) {
+    private void addDomainToHashMap(String[] items, int offset, String state) {
         for (int i = offset; i < items.length; i++) {
             String domainString = items[i].toLowerCase().trim();
             if (domainString.charAt(0) == '.') {
