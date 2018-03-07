@@ -93,10 +93,7 @@ public class HttpHostHeaderParser {
                     offset += 5;//skip SNI header.
                     length -= 5;//SNI size;
                     if (offset + length > limit) return null;
-                    String serverName = new String(buffer, offset, length);
-                    if (ProxyConfig.IS_DEBUG)
-                        LocalVpnService.Instance.writeLog("SNI: %s\n", serverName);
-                    return serverName;
+                    return new String(buffer, offset, length);
                 } else {
                     offset += length;
                 }

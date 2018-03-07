@@ -285,10 +285,9 @@ public class LocalVpnService extends VpnService implements Runnable {
                             m_VPNOutputStream.write(ipHeader.m_Data, ipHeader.m_Offset, size);
                             m_ReceivedBytes += size;
                         } else {
-                            LocalVpnService.Instance.writeLog("NoSession: %s %s\n", ipHeader.toString(), tcpHeader.toString());
+                            // LocalVpnService.Instance.writeLog("NoSession: %s %s\n", ipHeader.toString(), tcpHeader.toString());
                         }
                     } else {
-
                         // 添加端口映射
                         int portKey = tcpHeader.getSourcePort();
                         NatSession session = NatSessionManager.getSession(portKey);
@@ -310,8 +309,6 @@ public class LocalVpnService extends VpnService implements Runnable {
                             String host = HttpHostHeaderParser.parseHost(tcpHeader.m_Data, dataOffset, tcpDataSize);
                             if (host != null) {
                                 session.RemoteHost = host;
-                            } else {
-                                LocalVpnService.Instance.writeLog("No host name found: %s", session.RemoteHost);
                             }
                         }
 
