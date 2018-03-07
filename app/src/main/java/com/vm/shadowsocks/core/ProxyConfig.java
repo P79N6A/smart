@@ -8,6 +8,7 @@ import com.vm.shadowsocks.tunnel.Config;
 import com.vm.shadowsocks.tunnel.httpconnect.HttpConnectConfig;
 import com.vm.shadowsocks.tunnel.shadowsocks.ShadowsocksConfig;
 
+import org.apache.commons.net.util.SubnetUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -204,20 +205,20 @@ public class ProxyConfig {
     private String getDomainState(String domain) {
         domain = domain.toLowerCase();
         if (m_DomainMap.get(domain) != null) {
-            System.out.println("getDomainState m_DomainMap " + domain + " -> " + m_DomainMap.get(domain));
+            LocalVpnService.Instance.writeLog("getDomainState m_DomainMap " + domain + " -> " + m_DomainMap.get(domain));
             return m_DomainMap.get(domain);
         }
 
         for (String key : m_DomainSuffixMap.keySet()) {
             if (domain.endsWith(key)) {
-                System.out.println("getDomainState m_DomainSuffixMap " + domain + ":" + key + " -> " + m_DomainSuffixMap.get(key));
+                LocalVpnService.Instance.writeLog("getDomainState m_DomainSuffixMap " + domain + ":" + key + " -> " + m_DomainSuffixMap.get(key));
                 return m_DomainSuffixMap.get(key);
             }
         }
 
         for (String key : m_DomainKeywordMap.keySet()) {
             if (domain.contains(key)) {
-                System.out.println("getDomainState m_DomainKeywordMap " + domain + ":" + key + " -> " + m_DomainKeywordMap.get(key));
+                LocalVpnService.Instance.writeLog("getDomainState m_DomainKeywordMap " + domain + ":" + key + " -> " + m_DomainKeywordMap.get(key));
                 return m_DomainKeywordMap.get(key);
             }
         }
@@ -239,21 +240,30 @@ public class ProxyConfig {
 
         if (ip != 0) {
             if (isFakeIP(ip)) {
-                System.out.println(CommonMethods.ipIntToString(ip) + " is a fake ip");
+                LocalVpnService.Instance.writeLog(CommonMethods.ipIntToString(ip) + " is a fake ip");
                 return "proxy";
             }
 
             String ipStr = CommonMethods.ipIntToString(ip);
+
+            // ip country
             String countryIsoCode = LocalVpnService.Instance.getCountryIsoCodeByIP(ipStr);
             if (countryIsoCode != null) {
                 countryIsoCode = countryIsoCode.toLowerCase();// 统一使用小写
                 if (m_IPCountryMap.get(countryIsoCode) != null) {
-                    System.out.println("m_IPCountryMap " + ipStr + " " + countryIsoCode + " -> " + m_IPCountryMap.get(countryIsoCode));
+                    LocalVpnService.Instance.writeLog("m_IPCountryMap " + ipStr + " " + countryIsoCode + " -> " + m_IPCountryMap.get(countryIsoCode));
                     return m_IPCountryMap.get(countryIsoCode);
                 }
             }
 
-            // TODO ip cidr
+            // ip cidr
+            for (String key : m_IPCidrMap.keySet()) {
+                SubnetUtils subnetUtils = new SubnetUtils(key);
+                if (subnetUtils.getInfo().isInRange(ipStr)) {
+                    LocalVpnService.Instance.writeLog("m_IPCidrMap " + ipStr + " is in " + key + " " + m_IPCidrMap.get(key));
+                    return m_IPCidrMap.get(key);
+                }
+            }
         }
 
         return "direct";
@@ -349,7 +359,7 @@ public class ProxyConfig {
             try {
                 if (!tagString.startsWith("#")) {
                     if (ProxyConfig.IS_DEBUG)
-                        System.out.println(line);
+                        LocalVpnService.Instance.writeLog(line);
 
                     if (tagString.equals("ip")) {
                         addIPAddressToList(items, 1, m_IpList);

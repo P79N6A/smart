@@ -1,5 +1,6 @@
 package com.vm.shadowsocks.tunnel.httpconnect;
 
+import com.vm.shadowsocks.core.LocalVpnService;
 import com.vm.shadowsocks.core.ProxyConfig;
 import com.vm.shadowsocks.tunnel.Tunnel;
 
@@ -45,7 +46,7 @@ public class HttpConnectTunnel extends Tunnel {
                 bytesSent = 10 - buffer.remaining();
                 buffer.limit(limit);
                 if (ProxyConfig.IS_DEBUG)
-                    System.out.printf("Send %d bytes(%s) to %s\n", bytesSent, firString, m_DestAddress);
+                    LocalVpnService.Instance.writeLog("Send %d bytes(%s) to %s\n", bytesSent, firString, m_DestAddress);
             }
         }
     }

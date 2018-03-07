@@ -164,7 +164,6 @@ public class MainActivity extends Activity implements
                     })
                     .show();
         } else if (v.getTag().toString().equals("AppSelect")) {
-            System.out.println("abc");
             startActivity(new Intent(this, AppManager.class));
         }
     }

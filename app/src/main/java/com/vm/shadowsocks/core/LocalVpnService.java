@@ -73,12 +73,12 @@ public class LocalVpnService extends VpnService implements Runnable {
         m_DNSBuffer = ((ByteBuffer) ByteBuffer.wrap(m_Packet).position(28)).slice();
         Instance = this;
 
-        System.out.printf("New VPNService(%d)\n", ID);
+        LocalVpnService.Instance.writeLog("New VPNService(%d)\n", ID);
     }
 
     @Override
     public void onCreate() {
-        System.out.printf("VPNService(%s) created.\n", ID);
+        LocalVpnService.Instance.writeLog("VPNService(%s) created.\n", ID);
         // Start a new session by creating a new thread.
         m_VPNThread = new Thread(this, "VPNServiceThread");
         m_VPNThread.start();
@@ -168,11 +168,11 @@ public class LocalVpnService extends VpnService implements Runnable {
     @Override
     public synchronized void run() {
         try {
-            System.out.printf("VPNService(%s) work thread is runing...\n", ID);
+            LocalVpnService.Instance.writeLog("VPNService(%s) work thread is runing...\n", ID);
 
             ProxyConfig.AppInstallID = getAppInstallID();// 获取安装ID
             ProxyConfig.AppVersion = getVersionName();// 获取版本号
-            System.out.printf("AppInstallID: %s\n", ProxyConfig.AppInstallID);
+            LocalVpnService.Instance.writeLog("AppInstallID: %s\n", ProxyConfig.AppInstallID);
             writeLog("Android version: %s", Build.VERSION.RELEASE);
             writeLog("App version: %s", ProxyConfig.AppVersion);
 
@@ -232,7 +232,7 @@ public class LocalVpnService extends VpnService implements Runnable {
                 }
             }
         } catch (InterruptedException e) {
-            System.out.println(e);
+            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
             writeLog("Fatal error: %s", e.toString());
@@ -285,7 +285,7 @@ public class LocalVpnService extends VpnService implements Runnable {
                             m_VPNOutputStream.write(ipHeader.m_Data, ipHeader.m_Offset, size);
                             m_ReceivedBytes += size;
                         } else {
-                            System.out.printf("NoSession: %s %s\n", ipHeader.toString(), tcpHeader.toString());
+                            LocalVpnService.Instance.writeLog("NoSession: %s %s\n", ipHeader.toString(), tcpHeader.toString());
                         }
                     } else {
 
@@ -311,7 +311,7 @@ public class LocalVpnService extends VpnService implements Runnable {
                             if (host != null) {
                                 session.RemoteHost = host;
                             } else {
-                                System.out.printf("No host name found: %s", session.RemoteHost);
+                                LocalVpnService.Instance.writeLog("No host name found: %s", session.RemoteHost);
                             }
                         }
 
@@ -358,20 +358,20 @@ public class LocalVpnService extends VpnService implements Runnable {
         // MTU
         builder.setMtu(ProxyConfig.Instance.getMTU());
         if (ProxyConfig.IS_DEBUG)
-            System.out.printf("setMtu: %d\n", ProxyConfig.Instance.getMTU());
+            LocalVpnService.Instance.writeLog("setMtu: %d\n", ProxyConfig.Instance.getMTU());
 
         // ip address
         IPAddress ipAddress = ProxyConfig.Instance.getDefaultLocalIP();
         LOCAL_IP = CommonMethods.ipStringToInt(ipAddress.Address);
         builder.addAddress(ipAddress.Address, ipAddress.PrefixLength);
         if (ProxyConfig.IS_DEBUG)
-            System.out.printf("addAddress: %s/%d\n", ipAddress.Address, ipAddress.PrefixLength);
+            LocalVpnService.Instance.writeLog("addAddress: %s/%d\n", ipAddress.Address, ipAddress.PrefixLength);
 
         // dns
         for (ProxyConfig.IPAddress dns : ProxyConfig.Instance.getDnsList()) {
             builder.addDnsServer(dns.Address);
             if (ProxyConfig.IS_DEBUG)
-                System.out.printf("addDnsServer: %s\n", dns.Address);
+                LocalVpnService.Instance.writeLog("addDnsServer: %s\n", dns.Address);
         }
 
         // 添加路由
@@ -379,16 +379,16 @@ public class LocalVpnService extends VpnService implements Runnable {
             for (ProxyConfig.IPAddress routeAddress : ProxyConfig.Instance.getRouteList()) {
                 builder.addRoute(routeAddress.Address, routeAddress.PrefixLength);
                 if (ProxyConfig.IS_DEBUG)
-                    System.out.printf("addRoute: %s/%d\n", routeAddress.Address, routeAddress.PrefixLength);
+                    LocalVpnService.Instance.writeLog("addRoute: %s/%d\n", routeAddress.Address, routeAddress.PrefixLength);
             }
             builder.addRoute(CommonMethods.ipIntToString(ProxyConfig.FAKE_NETWORK_IP), 16);
 
             if (ProxyConfig.IS_DEBUG)
-                System.out.printf("addRoute for FAKE_NETWORK: %s/%d\n", CommonMethods.ipIntToString(ProxyConfig.FAKE_NETWORK_IP), 16);
+                LocalVpnService.Instance.writeLog("addRoute for FAKE_NETWORK: %s/%d\n", CommonMethods.ipIntToString(ProxyConfig.FAKE_NETWORK_IP), 16);
         } else {
             builder.addRoute("0.0.0.0", 0);
             if (ProxyConfig.IS_DEBUG)
-                System.out.printf("addDefaultRoute: 0.0.0.0/0\n");
+                LocalVpnService.Instance.writeLog("addDefaultRoute: 0.0.0.0/0\n");
         }
 
 
@@ -406,7 +406,7 @@ public class LocalVpnService extends VpnService implements Runnable {
                     builder.addRoute(value, 128);
                 }
                 if (ProxyConfig.IS_DEBUG)
-                    System.out.printf("%s=%s\n", name, value);
+                    LocalVpnService.Instance.writeLog("%s=%s\n", name, value);
             }
         }
 
@@ -476,7 +476,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 
     @Override
     public void onDestroy() {
-        System.out.printf("VPNService(%s) destoried.\n", ID);
+        LocalVpnService.Instance.writeLog("VPNService(%s) destoried.\n", ID);
         if (m_VPNThread != null) {
             m_VPNThread.interrupt();
         }

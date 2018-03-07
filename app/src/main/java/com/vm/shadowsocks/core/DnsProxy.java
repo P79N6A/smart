@@ -94,7 +94,7 @@ public class DnsProxy implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            System.out.println("DnsResolver Thread Exited.");
+            LocalVpnService.Instance.writeLog("DnsResolver Thread Exited.");
             this.stop();
         }
     }
@@ -153,7 +153,7 @@ public class DnsProxy implements Runnable {
                     int fakeIP = getOrCreateFakeIP(question.Domain);
                     tamperDnsResponse(rawPacket, dnsPacket, fakeIP);
                     if (ProxyConfig.IS_DEBUG)
-                        System.out.printf("FakeDns: %s=>%s(%s)\n", question.Domain, CommonMethods.ipIntToString(realIP), CommonMethods.ipIntToString(fakeIP));
+                        LocalVpnService.Instance.writeLog("FakeDns: %s=>%s(%s)\n", question.Domain, CommonMethods.ipIntToString(realIP), CommonMethods.ipIntToString(fakeIP));
                     return true;
                 }
             }
@@ -173,7 +173,7 @@ public class DnsProxy implements Runnable {
         if (state != null) {
             // DNS污染，默认污染海外网站
             if (ProxyConfig.IS_DEBUG)
-                System.out.println("onDnsResponseReceived: "+ dnsPacket.Questions[0].Domain + " " + CommonMethods.ipIntToString(state.RemoteIP) + ":" + state.RemotePort + "<->" + CommonMethods.ipIntToString(state.ClientIP) + ":" + state.ClientPort);
+                LocalVpnService.Instance.writeLog("onDnsResponseReceived: " + dnsPacket.Questions[0].Domain + " " + CommonMethods.ipIntToString(state.RemoteIP) + ":" + state.RemotePort + "<->" + CommonMethods.ipIntToString(state.ClientIP) + ":" + state.ClientPort);
             dnsPollution(udpHeader.m_Data, dnsPacket);
 
             dnsPacket.Header.setID(state.ClientQueryID);
@@ -209,7 +209,7 @@ public class DnsProxy implements Runnable {
                 tamperDnsResponse(ipHeader.m_Data, dnsPacket, fakeIP);
 
                 if (ProxyConfig.IS_DEBUG)
-                    System.out.printf("interceptDns FakeDns: %s=>%s\n", question.Domain, CommonMethods.ipIntToString(fakeIP));
+                    LocalVpnService.Instance.writeLog("interceptDns FakeDns: %s=>%s\n", question.Domain, CommonMethods.ipIntToString(fakeIP));
 
                 // 返回fake ip
                 int sourceIP = ipHeader.getSourceIP();
@@ -238,10 +238,9 @@ public class DnsProxy implements Runnable {
     }
 
     public void onDnsRequestReceived(IPHeader ipHeader, UDPHeader udpHeader, DnsPacket dnsPacket) {
-        // FIXME
         // 不拦截，转发dns数据包
         if (ProxyConfig.IS_DEBUG)
-            System.out.println("onDnsRequestReceived: " + dnsPacket.Questions[0].Domain + " " + CommonMethods.ipIntToString(ipHeader.getSourceIP()) + ":" + udpHeader.getSourcePort() + "<->" + CommonMethods.ipIntToString(ipHeader.getDestinationIP()) + ":" + udpHeader.getDestinationPort());
+            LocalVpnService.Instance.writeLog("onDnsRequestReceived: " + dnsPacket.Questions[0].Domain + " " + CommonMethods.ipIntToString(ipHeader.getSourceIP()) + ":" + udpHeader.getSourcePort() + "<->" + CommonMethods.ipIntToString(ipHeader.getDestinationIP()) + ":" + udpHeader.getDestinationPort());
         if (!interceptDns(ipHeader, udpHeader, dnsPacket)) {
             // 转发DNS
             QueryState state = new QueryState();

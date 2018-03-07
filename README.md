@@ -6,8 +6,12 @@ Tribute to [SmartProxy](https://github.com/oldman1977/SmartProxy).
 #### TODO
 
 * [x] rule: DOMAIN DOMAIN-SUFFIX DOMAIN-KEYWORD
-* [ ] rule: IP-CIDR IP-COUNTRY
+* [x] rule: IP-CIDR IP-COUNTRY
 * [x] action: direct proxy block
+
+#### Know issues
+
+* [ ] too many dns query
 
 #### LICENSE
 

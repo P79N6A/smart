@@ -27,7 +27,7 @@ public class TcpProxyServer implements Runnable {
         m_ServerSocketChannel.socket().bind(new InetSocketAddress(port));
         m_ServerSocketChannel.register(m_Selector, SelectionKey.OP_ACCEPT);
         this.Port = (short) m_ServerSocketChannel.socket().getLocalPort();
-        System.out.printf("AsyncTcpServer listen on %d success.\n", this.Port & 0xFFFF);
+        LocalVpnService.Instance.writeLog("AsyncTcpServer listen on %d success.\n", this.Port & 0xFFFF);
     }
 
     public void start() {
@@ -77,7 +77,7 @@ public class TcpProxyServer implements Runnable {
                                 onAccepted(key);
                             }
                         } catch (Exception e) {
-                            System.out.println(e.toString());
+                            LocalVpnService.Instance.writeLog(e.toString());
                         }
                     }
                     keyIterator.remove();
@@ -87,7 +87,7 @@ public class TcpProxyServer implements Runnable {
             e.printStackTrace();
         } finally {
             this.stop();
-            System.out.println("TcpServer thread exited.");
+            LocalVpnService.Instance.writeLog("TcpServer thread exited.");
         }
     }
 
@@ -98,7 +98,7 @@ public class TcpProxyServer implements Runnable {
             String action = ProxyConfig.Instance.needProxy(session.RemoteHost, session.RemoteIP);
             if (action.equals("proxy")) {
                 if (ProxyConfig.IS_DEBUG)
-                    System.out.printf("%d/%d:[PROXY] %s=>%s:%d\n", NatSessionManager.getSessionCount(), Tunnel.SessionCount, session.RemoteHost, CommonMethods.ipIntToString(session.RemoteIP), session.RemotePort & 0xFFFF);
+                    LocalVpnService.Instance.writeLog("%d/%d:[PROXY] %s=>%s:%d\n", NatSessionManager.getSessionCount(), Tunnel.SessionCount, session.RemoteHost, CommonMethods.ipIntToString(session.RemoteIP), session.RemotePort & 0xFFFF);
                 return InetSocketAddress.createUnresolved(session.RemoteHost, session.RemotePort & 0xFFFF);
             } else if (action.equals("direct")) {
                 return new InetSocketAddress(localChannel.socket().getInetAddress(), session.RemotePort & 0xFFFF);

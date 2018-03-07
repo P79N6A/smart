@@ -131,7 +131,7 @@ public abstract class Tunnel {
                     if (!m_BrotherTunnel.write(buffer, true)) {
                         key.cancel();//兄弟吃不消，就取消读取事件。
                         if (ProxyConfig.IS_DEBUG)
-                            System.out.printf("%s can not read more.\n", m_ServerEP);
+                            LocalVpnService.Instance.writeLog("%s can not read more.\n", m_ServerEP);
                     }
                 }
             } else if (bytesRead < 0) {
