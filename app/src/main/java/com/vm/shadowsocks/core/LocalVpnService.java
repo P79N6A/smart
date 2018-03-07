@@ -11,6 +11,10 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 
+import com.maxmind.geoip2.DatabaseReader;
+import com.maxmind.geoip2.exception.GeoIp2Exception;
+import com.maxmind.geoip2.model.CountryResponse;
+import com.maxmind.geoip2.record.Country;
 import com.vm.shadowsocks.R;
 import com.vm.shadowsocks.core.ProxyConfig.IPAddress;
 import com.vm.shadowsocks.dns.DnsPacket;
@@ -23,7 +27,10 @@ import com.vm.shadowsocks.ui.MainActivity;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Map;
@@ -35,6 +42,7 @@ public class LocalVpnService extends VpnService implements Runnable {
     public static LocalVpnService Instance;
     public static String ProxyUrl;
     public static boolean IsRunning = false;
+    public static DatabaseReader maxmindReader;
 
     private static int ID;
     private static int LOCAL_IP;
@@ -181,6 +189,10 @@ public class LocalVpnService extends VpnService implements Runnable {
                 }
                 writeLog("Load failed with error: %s", errString);
             }
+
+            // init maxmind
+            InputStream maxmindInputStream = getResources().openRawResource(R.raw.geolite2);
+            maxmindReader = new DatabaseReader.Builder(maxmindInputStream).build();
 
             m_TcpProxyServer = new TcpProxyServer(0);
             m_TcpProxyServer.start();
@@ -470,4 +482,23 @@ public class LocalVpnService extends VpnService implements Runnable {
         }
     }
 
+    public String getCountryIsoCodeByIP(String ip) {
+        InetAddress ipAddress = null;
+        try {
+            ipAddress = InetAddress.getByName(ip);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return null;
+        }
+        try {
+            CountryResponse response = maxmindReader.country(ipAddress);
+            Country country = response.getCountry();
+            return country.getIsoCode();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (GeoIp2Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

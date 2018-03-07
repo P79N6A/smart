@@ -35,6 +35,7 @@ import com.vm.shadowsocks.core.LocalVpnService;
 import com.vm.shadowsocks.core.ProxyConfig;
 
 import java.util.Calendar;
+import java.util.Collections;
 
 public class MainActivity extends Activity implements
         View.OnClickListener,
@@ -171,7 +172,7 @@ public class MainActivity extends Activity implements
     private void scanForProxyUrl() {
         new IntentIntegrator(this)
                 .setPrompt(getString(R.string.config_url_scan_hint))
-                .initiateScan(IntentIntegrator.QR_CODE_TYPES);
+                .initiateScan(Collections.singleton("QR_CODE"));
     }
 
     private void showProxyUrlInputDialog() {
