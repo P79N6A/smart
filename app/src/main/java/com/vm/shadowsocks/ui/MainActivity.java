@@ -213,8 +213,6 @@ public class MainActivity extends Activity implements
                 mCalendar.get(Calendar.SECOND),
                 logString);
 
-        System.out.println(logString);
-
         if (textViewLog.getLineCount() > 200) {
             textViewLog.setText("");
         }

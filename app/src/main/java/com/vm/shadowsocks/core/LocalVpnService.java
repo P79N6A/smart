@@ -72,13 +72,10 @@ public class LocalVpnService extends VpnService implements Runnable {
         m_UDPHeader = new UDPHeader(m_Packet, 20);
         m_DNSBuffer = ((ByteBuffer) ByteBuffer.wrap(m_Packet).position(28)).slice();
         Instance = this;
-
-        LocalVpnService.Instance.writeLog("New VPNService(%d)\n", ID);
     }
 
     @Override
     public void onCreate() {
-        LocalVpnService.Instance.writeLog("VPNService(%s) created.\n", ID);
         // Start a new session by creating a new thread.
         m_VPNThread = new Thread(this, "VPNServiceThread");
         m_VPNThread.start();
@@ -158,8 +155,7 @@ public class LocalVpnService extends VpnService implements Runnable {
             PackageManager packageManager = getPackageManager();
             // getPackageName()是你当前类的包名，0代表是获取版本信息
             PackageInfo packInfo = packageManager.getPackageInfo(getPackageName(), 0);
-            String version = packInfo.versionName;
-            return version;
+            return packInfo.versionName;
         } catch (Exception e) {
             return "0.0";
         }
@@ -172,16 +168,14 @@ public class LocalVpnService extends VpnService implements Runnable {
 
             ProxyConfig.AppInstallID = getAppInstallID();// 获取安装ID
             ProxyConfig.AppVersion = getVersionName();// 获取版本号
-            LocalVpnService.Instance.writeLog("AppInstallID: %s\n", ProxyConfig.AppInstallID);
             writeLog("Android version: %s", Build.VERSION.RELEASE);
             writeLog("App version: %s", ProxyConfig.AppVersion);
 
             waitUntilPreapred();// 检查是否准备完毕
 
-            writeLog("Load config from file ...");
             try {
                 ProxyConfig.Instance.loadFromFile(getResources().openRawResource(R.raw.config));
-                writeLog("Load done");
+                writeLog("Load config from file done");
             } catch (Exception e) {
                 String errString = e.getMessage();
                 if (errString == null || errString.isEmpty()) {
@@ -204,13 +198,10 @@ public class LocalVpnService extends VpnService implements Runnable {
 
             while (true) {
                 if (IsRunning) {
-                    //加载配置文件
-
-                    writeLog("set shadowsocks/(http proxy)");
+                    // 加载配置文件
                     try {
                         ProxyConfig.Instance.m_ProxyList.clear();
                         ProxyConfig.Instance.addProxyToList(ProxyUrl);
-                        writeLog("Proxy is: %s", ProxyConfig.Instance.getDefaultProxy());
                     } catch (Exception e) {
                         String errString = e.getMessage();
                         if (errString == null || errString.isEmpty()) {
@@ -284,8 +275,6 @@ public class LocalVpnService extends VpnService implements Runnable {
                             CommonMethods.ComputeTCPChecksum(ipHeader, tcpHeader);
                             m_VPNOutputStream.write(ipHeader.m_Data, ipHeader.m_Offset, size);
                             m_ReceivedBytes += size;
-                        } else {
-                            // LocalVpnService.Instance.writeLog("NoSession: %s %s\n", ipHeader.toString(), tcpHeader.toString());
                         }
                     } else {
                         // 添加端口映射
@@ -354,29 +343,21 @@ public class LocalVpnService extends VpnService implements Runnable {
         Builder builder = new Builder();
         // MTU
         builder.setMtu(ProxyConfig.Instance.getMTU());
-        if (ProxyConfig.IS_DEBUG)
-            LocalVpnService.Instance.writeLog("setMtu: %d\n", ProxyConfig.Instance.getMTU());
 
         // ip address
         IPAddress ipAddress = ProxyConfig.Instance.getDefaultLocalIP();
         LOCAL_IP = CommonMethods.ipStringToInt(ipAddress.Address);
         builder.addAddress(ipAddress.Address, ipAddress.PrefixLength);
-        if (ProxyConfig.IS_DEBUG)
-            LocalVpnService.Instance.writeLog("addAddress: %s/%d\n", ipAddress.Address, ipAddress.PrefixLength);
 
         // dns
         for (ProxyConfig.IPAddress dns : ProxyConfig.Instance.getDnsList()) {
             builder.addDnsServer(dns.Address);
-            if (ProxyConfig.IS_DEBUG)
-                LocalVpnService.Instance.writeLog("addDnsServer: %s\n", dns.Address);
         }
 
         // 添加路由
         if (ProxyConfig.Instance.getRouteList().size() > 0) {
             for (ProxyConfig.IPAddress routeAddress : ProxyConfig.Instance.getRouteList()) {
                 builder.addRoute(routeAddress.Address, routeAddress.PrefixLength);
-                if (ProxyConfig.IS_DEBUG)
-                    LocalVpnService.Instance.writeLog("addRoute: %s/%d\n", routeAddress.Address, routeAddress.PrefixLength);
             }
             builder.addRoute(CommonMethods.ipIntToString(ProxyConfig.FAKE_NETWORK_IP), 16);
 
@@ -402,8 +383,6 @@ public class LocalVpnService extends VpnService implements Runnable {
                 } else {
                     builder.addRoute(value, 128);
                 }
-                if (ProxyConfig.IS_DEBUG)
-                    LocalVpnService.Instance.writeLog("%s=%s\n", name, value);
             }
         }
 

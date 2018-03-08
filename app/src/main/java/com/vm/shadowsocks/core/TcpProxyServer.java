@@ -27,7 +27,6 @@ public class TcpProxyServer implements Runnable {
         m_ServerSocketChannel.socket().bind(new InetSocketAddress(port));
         m_ServerSocketChannel.register(m_Selector, SelectionKey.OP_ACCEPT);
         this.Port = (short) m_ServerSocketChannel.socket().getLocalPort();
-        LocalVpnService.Instance.writeLog("AsyncTcpServer listen on %d success.\n", this.Port & 0xFFFF);
     }
 
     public void start() {
@@ -77,7 +76,7 @@ public class TcpProxyServer implements Runnable {
                                 onAccepted(key);
                             }
                         } catch (Exception e) {
-                            LocalVpnService.Instance.writeLog(e.toString());
+                            e.printStackTrace();
                         }
                     }
                     keyIterator.remove();

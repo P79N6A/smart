@@ -106,13 +106,14 @@ public abstract class Tunnel {
     @SuppressLint("DefaultLocale")
     public void onConnectable() {
         try {
-            if (m_InnerChannel.finishConnect()) {//连接成功
-                onConnected(GL_BUFFER);//通知子类TCP已连接，子类可以根据协议实现握手等。
-            } else {//连接失败
+            if (m_InnerChannel.finishConnect()) {// 连接成功
+                onConnected(GL_BUFFER);// 通知子类TCP已连接，子类可以根据协议实现握手等。
+            } else {// 连接失败
                 LocalVpnService.Instance.writeLog("Error: connect to %s failed.", m_ServerEP);
                 this.dispose();
             }
         } catch (Exception e) {
+            e.printStackTrace();
             LocalVpnService.Instance.writeLog("Error: connect to %s failed: %s", m_ServerEP, e);
             this.dispose();
         }

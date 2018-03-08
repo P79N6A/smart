@@ -1,5 +1,6 @@
 session_name smart
 welcome_info 欢迎使用smart!
+debug false
 
 ip 172.25.0.1
 dns 223.5.5.5
@@ -12,22 +13,22 @@ mtu 1500
 
 # domain rule
 proxy_domain google.com twitter.com
-direct_domain baidu.com
-block_domain ads.mopub.com
+direct_domain baidu.com 115.com mi.com
+block_domain ads.mopub.com cpro.baidu.com hm.baidu.com
 
 # domain suffix rule
 proxy_domain_suffix google.com google.com.hk google.co.jp gstatic.com
-direct_domain_suffix
-block_domain_suffix
+direct_domain_suffix jd.com youku.com
+block_domain_suffix stat.m.jd.com monitor.uu.qq.com
 
 # domain keyword rule
-proxy_domain_keyword google gstatic
-direct_domain_keyword
-block_domain_keyword
+proxy_domain_keyword google gstatic instagram twitter twimg youtube fbcdn facebook gmail github binance gate huobi
+direct_domain_keyword baidu qiyi sohu qq netease 163 126 360 taobao ali cn
+block_domain_keyword mmstat duomeng amazon-adsystem analytics
 
 # ip country rule
-proxy_ip_country US EN
-direct_ip_country CN
+proxy_ip_country US ZA JP
+direct_ip_country CN HK
 block_ip_country
 
 # ip cidr rule

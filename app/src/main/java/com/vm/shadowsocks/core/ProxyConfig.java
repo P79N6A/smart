@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 public class ProxyConfig {
     public static final ProxyConfig Instance = new ProxyConfig();
-    public final static boolean IS_DEBUG = false;
+    public static boolean IS_DEBUG = false;
     public static String AppInstallID;
     public static String AppVersion;
     public final static int FAKE_NETWORK_MASK = CommonMethods.ipStringToInt("255.255.0.0");
@@ -157,7 +157,7 @@ public class ProxyConfig {
         if (m_IpList.size() > 0) {
             return m_IpList.get(0);
         } else {
-            return new IPAddress("10.8.0.2", 32);
+            return new IPAddress("172.25.0.1", 32);
         }
     }
 
@@ -198,27 +198,30 @@ public class ProxyConfig {
         if (m_mtu > 1400 && m_mtu <= 20000) {
             return m_mtu;
         } else {
-            return 20000;
+            return 1500;
         }
     }
 
     private String getDomainState(String domain) {
         domain = domain.toLowerCase();
         if (m_DomainMap.get(domain) != null) {
-            LocalVpnService.Instance.writeLog("getDomainState m_DomainMap " + domain + " -> " + m_DomainMap.get(domain));
+            if (ProxyConfig.IS_DEBUG)
+                LocalVpnService.Instance.writeLog("getDomainState m_DomainMap " + domain + " -> " + m_DomainMap.get(domain));
             return m_DomainMap.get(domain);
         }
 
         for (String key : m_DomainSuffixMap.keySet()) {
             if (domain.endsWith(key)) {
-                LocalVpnService.Instance.writeLog("getDomainState m_DomainSuffixMap " + domain + ":" + key + " -> " + m_DomainSuffixMap.get(key));
+                if (ProxyConfig.IS_DEBUG)
+                    LocalVpnService.Instance.writeLog("getDomainState m_DomainSuffixMap " + domain + ":" + key + " -> " + m_DomainSuffixMap.get(key));
                 return m_DomainSuffixMap.get(key);
             }
         }
 
         for (String key : m_DomainKeywordMap.keySet()) {
             if (domain.contains(key)) {
-                LocalVpnService.Instance.writeLog("getDomainState m_DomainKeywordMap " + domain + ":" + key + " -> " + m_DomainKeywordMap.get(key));
+                if (ProxyConfig.IS_DEBUG)
+                    LocalVpnService.Instance.writeLog("getDomainState m_DomainKeywordMap " + domain + ":" + key + " -> " + m_DomainKeywordMap.get(key));
                 return m_DomainKeywordMap.get(key);
             }
         }
@@ -240,7 +243,6 @@ public class ProxyConfig {
 
         if (ip != 0) {
             if (isFakeIP(ip)) {
-                LocalVpnService.Instance.writeLog(CommonMethods.ipIntToString(ip) + " is a fake ip");
                 return "proxy";
             }
 
@@ -251,7 +253,8 @@ public class ProxyConfig {
             if (countryIsoCode != null) {
                 countryIsoCode = countryIsoCode.toLowerCase();// 统一使用小写
                 if (m_IPCountryMap.get(countryIsoCode) != null) {
-                    LocalVpnService.Instance.writeLog("m_IPCountryMap " + ipStr + " " + countryIsoCode + " -> " + m_IPCountryMap.get(countryIsoCode));
+                    if (ProxyConfig.IS_DEBUG)
+                        LocalVpnService.Instance.writeLog("m_IPCountryMap " + ipStr + " " + countryIsoCode + " -> " + m_IPCountryMap.get(countryIsoCode));
                     return m_IPCountryMap.get(countryIsoCode);
                 }
             }
@@ -260,7 +263,8 @@ public class ProxyConfig {
             for (String key : m_IPCidrMap.keySet()) {
                 SubnetUtils subnetUtils = new SubnetUtils(key);
                 if (subnetUtils.getInfo().isInRange(ipStr)) {
-                    LocalVpnService.Instance.writeLog("m_IPCidrMap " + ipStr + " is in " + key + " " + m_IPCidrMap.get(key));
+                    if (ProxyConfig.IS_DEBUG)
+                        LocalVpnService.Instance.writeLog("m_IPCidrMap " + ipStr + " is in " + key + " " + m_IPCidrMap.get(key));
                     return m_IPCidrMap.get(key);
                 }
             }
@@ -358,17 +362,24 @@ public class ProxyConfig {
             String tagString = items[0].toLowerCase(Locale.ENGLISH).trim();
             try {
                 if (!tagString.startsWith("#")) {
-                    if (ProxyConfig.IS_DEBUG)
-                        LocalVpnService.Instance.writeLog(line);
-
                     if (tagString.equals("ip")) {
                         addIPAddressToList(items, 1, m_IpList);
                     } else if (tagString.equals("dns")) {
                         addIPAddressToList(items, 1, m_DnsList);
+                    } else if (tagString.equals("dns_ttl")) {
+                        m_dns_ttl = Integer.parseInt(items[1]);
+                    } else if (tagString.equals("mtu")) {
+                        m_mtu = Integer.parseInt(items[1]);
                     } else if (tagString.equals("route")) {
                         addIPAddressToList(items, 1, m_RouteList);
                     } else if (tagString.equals("proxy")) {
                         addProxyToList(items, 1);
+                    } else if (tagString.equals("welcome_info")) {
+                        m_welcome_info = line.substring(line.indexOf(" ")).trim();
+                    } else if (tagString.equals("session_name")) {
+                        m_session_name = items[1];
+                    } else if (tagString.equals("debug")) {
+                        ProxyConfig.IS_DEBUG = convertToBool(items[1]);
                     } else if (tagString.equals("proxy_domain")) {
                         addDomainToHashMap(items, 1, "proxy");
                     } else if (tagString.equals("direct_domain")) {
@@ -399,18 +410,10 @@ public class ProxyConfig {
                         addIPCidrToHashMap(items, 1, "direct");
                     } else if (tagString.equals("block_ip_cidr")) {
                         addIPCidrToHashMap(items, 1, "block");
-                    } else if (tagString.equals("dns_ttl")) {
-                        m_dns_ttl = Integer.parseInt(items[1]);
-                    } else if (tagString.equals("welcome_info")) {
-                        m_welcome_info = line.substring(line.indexOf(" ")).trim();
-                    } else if (tagString.equals("session_name")) {
-                        m_session_name = items[1];
                     } else if (tagString.equals("user_agent")) {
                         m_user_agent = line.substring(line.indexOf(" ")).trim();
                     } else if (tagString.equals("isolate_http_host_header")) {
                         m_isolate_http_host_header = convertToBool(items[1]);
-                    } else if (tagString.equals("mtu")) {
-                        m_mtu = Integer.parseInt(items[1]);
                     }
                 }
             } catch (Exception e) {
