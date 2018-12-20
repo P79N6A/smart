@@ -92,6 +92,7 @@ public class DnsProxy implements Runnable {
                 }
             }
         } catch (Exception e) {
+            LocalVpnService.Instance.writeLog(e.getLocalizedMessage());
             e.printStackTrace();
         } finally {
             LocalVpnService.Instance.writeLog("DnsResolver Thread Exited.");
@@ -152,8 +153,8 @@ public class DnsProxy implements Runnable {
                 if (ProxyConfig.Instance.needProxy(question.Domain, realIP).equals("proxy")) {
                     int fakeIP = getOrCreateFakeIP(question.Domain);
                     tamperDnsResponse(rawPacket, dnsPacket, fakeIP);
-                    if (ProxyConfig.IS_DEBUG)
-                        LocalVpnService.Instance.writeLog("FakeDns: %s=>%s(%s)\n", question.Domain, CommonMethods.ipIntToString(realIP), CommonMethods.ipIntToString(fakeIP));
+                    // if (ProxyConfig.IS_DEBUG)
+                        // LocalVpnService.Instance.writeLog("FakeDns: %s=>%s(%s)\n", question.Domain, CommonMethods.ipIntToString(realIP), CommonMethods.ipIntToString(fakeIP));
                     return true;
                 }
             }
@@ -172,8 +173,8 @@ public class DnsProxy implements Runnable {
 
         if (state != null) {
             // DNS污染，默认污染海外网站
-            if (ProxyConfig.IS_DEBUG)
-                LocalVpnService.Instance.writeLog("onDnsResponseReceived: " + dnsPacket.Questions[0].Domain + " " + CommonMethods.ipIntToString(state.RemoteIP) + ":" + state.RemotePort + "<->" + CommonMethods.ipIntToString(state.ClientIP) + ":" + state.ClientPort);
+            // if (ProxyConfig.IS_DEBUG)
+                // LocalVpnService.Instance.writeLog("onDnsResponseReceived: " + dnsPacket.Questions[0].Domain + " " + CommonMethods.ipIntToString(state.RemoteIP) + ":" + state.RemotePort + "<->" + CommonMethods.ipIntToString(state.ClientIP) + ":" + state.ClientPort);
             dnsPollution(udpHeader.m_Data, dnsPacket);
 
             dnsPacket.Header.setID(state.ClientQueryID);
@@ -208,8 +209,8 @@ public class DnsProxy implements Runnable {
                 int fakeIP = getOrCreateFakeIP(question.Domain);
                 tamperDnsResponse(ipHeader.m_Data, dnsPacket, fakeIP);
 
-                if (ProxyConfig.IS_DEBUG)
-                    LocalVpnService.Instance.writeLog("interceptDns FakeDns: %s=>%s\n", question.Domain, CommonMethods.ipIntToString(fakeIP));
+                // if (ProxyConfig.IS_DEBUG)
+                    // LocalVpnService.Instance.writeLog("interceptDns FakeDns: %s=>%s\n", question.Domain, CommonMethods.ipIntToString(fakeIP));
 
                 // 返回fake ip
                 int sourceIP = ipHeader.getSourceIP();
@@ -239,8 +240,8 @@ public class DnsProxy implements Runnable {
 
     public void onDnsRequestReceived(IPHeader ipHeader, UDPHeader udpHeader, DnsPacket dnsPacket) {
         // 不拦截，转发dns数据包
-        if (ProxyConfig.IS_DEBUG)
-            LocalVpnService.Instance.writeLog("onDnsRequestReceived: " + dnsPacket.Questions[0].Domain + " " + CommonMethods.ipIntToString(ipHeader.getSourceIP()) + ":" + udpHeader.getSourcePort() + "<->" + CommonMethods.ipIntToString(ipHeader.getDestinationIP()) + ":" + udpHeader.getDestinationPort());
+        // if (ProxyConfig.IS_DEBUG)
+            // LocalVpnService.Instance.writeLog("onDnsRequestReceived: " + dnsPacket.Questions[0].Domain + " " + CommonMethods.ipIntToString(ipHeader.getSourceIP()) + ":" + udpHeader.getSourcePort() + "<->" + CommonMethods.ipIntToString(ipHeader.getDestinationIP()) + ":" + udpHeader.getDestinationPort());
         if (!interceptDns(ipHeader, udpHeader, dnsPacket)) {
             // 转发DNS
             QueryState state = new QueryState();
@@ -252,12 +253,12 @@ public class DnsProxy implements Runnable {
             state.RemotePort = udpHeader.getDestinationPort();
 
             // 转换QueryID
-            m_QueryID++;// 增加ID
+            m_QueryID++; // 增加ID
             dnsPacket.Header.setID(m_QueryID);
 
             synchronized (m_QueryArray) {
-                clearExpiredQueries();// 清空过期的查询，减少内存开销。
-                m_QueryArray.put(m_QueryID, state);// 关联数据
+                clearExpiredQueries(); // 清空过期的查询，减少内存开销。
+                m_QueryArray.put(m_QueryID, state); // 关联数据
             }
 
             InetSocketAddress remoteAddress = new InetSocketAddress(CommonMethods.ipIntToInet4Address(state.RemoteIP), state.RemotePort);
@@ -282,10 +283,10 @@ public class DnsProxy implements Runnable {
                 if (LocalVpnService.Instance.protect(m_Client)) {
                     m_Client.send(packet);
                 } else {
-                    System.err.println("VPN protect udp socket failed.");
+                    LocalVpnService.Instance.writeLog("VPN protect udp socket failed.");
                 }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
+                LocalVpnService.Instance.writeLog(e.getLocalizedMessage());
                 e.printStackTrace();
             }
         }

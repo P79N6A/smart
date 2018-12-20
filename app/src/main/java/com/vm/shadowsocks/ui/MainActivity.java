@@ -80,7 +80,7 @@ public class MainActivity extends Activity implements
         mCalendar = Calendar.getInstance();
         LocalVpnService.addOnStatusChangedListener(this);
 
-        //Pre-App Proxy
+        // Pre-App Proxy
         if (AppProxyManager.isLollipopOrAbove) {
             new AppProxyManager(this);
             textViewProxyApp = (TextView) findViewById(R.id.textViewAppSelectDetail);
@@ -122,12 +122,13 @@ public class MainActivity extends Activity implements
             if (url == null || url.isEmpty())
                 return false;
 
-            if (url.startsWith("ss://")) {//file path
+            if (url.startsWith("ss://")) { // file path
                 return true;
-            } else { //url
+            } else { // url
                 Uri uri = Uri.parse(url);
                 if (!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme()))
                     return false;
+
                 if (uri.getHost() == null)
                     return false;
             }
@@ -262,7 +263,7 @@ public class MainActivity extends Activity implements
 
         textViewLog.setText("");
         GL_HISTORY_LOGS = null;
-        onLogReceived("starting...");
+        onLogReceived("Starting...");
         LocalVpnService.ProxyUrl = ProxyUrl;
         startService(new Intent(this, LocalVpnService.class));
     }
@@ -323,12 +324,6 @@ public class MainActivity extends Activity implements
                         .setTitle(getString(R.string.app_name) + getVersionName())
                         .setMessage(R.string.about_info)
                         .setPositiveButton(R.string.btn_ok, null)
-                        .setNegativeButton(R.string.btn_more, new OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/dawei101/shadowsocks-android-java")));
-                            }
-                        })
                         .show();
 
                 return true;

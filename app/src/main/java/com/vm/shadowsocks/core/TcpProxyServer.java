@@ -42,6 +42,7 @@ public class TcpProxyServer implements Runnable {
                 m_Selector.close();
                 m_Selector = null;
             } catch (Exception e) {
+                LocalVpnService.Instance.writeLog(e.getLocalizedMessage());
                 e.printStackTrace();
             }
         }
@@ -51,6 +52,7 @@ public class TcpProxyServer implements Runnable {
                 m_ServerSocketChannel.close();
                 m_ServerSocketChannel = null;
             } catch (Exception e) {
+                LocalVpnService.Instance.writeLog(e.getLocalizedMessage());
                 e.printStackTrace();
             }
         }
@@ -96,8 +98,8 @@ public class TcpProxyServer implements Runnable {
         if (session != null) {
             String action = ProxyConfig.Instance.needProxy(session.RemoteHost, session.RemoteIP);
             if (action.equals("proxy")) {
-                if (ProxyConfig.IS_DEBUG)
-                    LocalVpnService.Instance.writeLog("%d/%d:[PROXY] %s=>%s:%d\n", NatSessionManager.getSessionCount(), Tunnel.SessionCount, session.RemoteHost, CommonMethods.ipIntToString(session.RemoteIP), session.RemotePort & 0xFFFF);
+                // if (ProxyConfig.IS_DEBUG)
+                    // LocalVpnService.Instance.writeLog("%d/%d:[PROXY] %s=>%s:%d\n", NatSessionManager.getSessionCount(), Tunnel.SessionCount, session.RemoteHost, CommonMethods.ipIntToString(session.RemoteIP), session.RemotePort & 0xFFFF);
                 return InetSocketAddress.createUnresolved(session.RemoteHost, session.RemotePort & 0xFFFF);
             } else if (action.equals("direct")) {
                 return new InetSocketAddress(localChannel.socket().getInetAddress(), session.RemotePort & 0xFFFF);
@@ -117,9 +119,9 @@ public class TcpProxyServer implements Runnable {
             InetSocketAddress destAddress = getDestAddress(localChannel);
             if (destAddress != null) {
                 Tunnel remoteTunnel = TunnelFactory.createTunnelByConfig(destAddress, m_Selector);
-                remoteTunnel.setBrotherTunnel(localTunnel);//关联兄弟
-                localTunnel.setBrotherTunnel(remoteTunnel);//关联兄弟
-                remoteTunnel.connect(destAddress);//开始连接
+                remoteTunnel.setBrotherTunnel(localTunnel); // 关联兄弟
+                localTunnel.setBrotherTunnel(remoteTunnel); // 关联兄弟
+                remoteTunnel.connect(destAddress); // 开始连接
             } else {
                 LocalVpnService.Instance.writeLog("Error: socket(%s:%d) target host is null.", localChannel.socket().getInetAddress().toString(), localChannel.socket().getPort());
                 localTunnel.dispose();

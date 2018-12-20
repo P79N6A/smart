@@ -166,12 +166,12 @@ public class LocalVpnService extends VpnService implements Runnable {
         try {
             LocalVpnService.Instance.writeLog("VPNService(%s) work thread is runing...\n", ID);
 
-            ProxyConfig.AppInstallID = getAppInstallID();// 获取安装ID
-            ProxyConfig.AppVersion = getVersionName();// 获取版本号
+            ProxyConfig.AppInstallID = getAppInstallID(); // 获取安装ID
+            ProxyConfig.AppVersion = getVersionName(); // 获取版本号
             writeLog("Android version: %s", Build.VERSION.RELEASE);
             writeLog("App version: %s", ProxyConfig.AppVersion);
 
-            waitUntilPreapred();// 检查是否准备完毕
+            waitUntilPreapred(); // 检查是否准备完毕
 
             try {
                 ProxyConfig.Instance.loadFromFile(getResources().openRawResource(R.raw.config));
@@ -378,7 +378,7 @@ public class LocalVpnService extends VpnService implements Runnable {
             String value = (String) method.invoke(null, name);
             if (value != null && !"".equals(value) && !servers.contains(value)) {
                 servers.add(value);
-                if (value.replaceAll("\\d", "").length() == 3) {//防止IPv6地址导致问题
+                if (value.replaceAll("\\d", "").length() == 3) { // 防止IPv6地址导致问题
                     builder.addRoute(value, 32);
                 } else {
                     builder.addRoute(value, 128);
@@ -391,7 +391,7 @@ public class LocalVpnService extends VpnService implements Runnable {
                 writeLog("Proxy All Apps");
             }
             for (AppInfo app : AppProxyManager.Instance.proxyAppInfo) {
-                builder.addAllowedApplication("com.vm.shadowsocks");//需要把自己加入代理，不然会无法进行网络连接
+                builder.addAllowedApplication("com.vm.shadowsocks"); // 需要把自己加入代理，不然会无法进行网络连接
                 try {
                     builder.addAllowedApplication(app.getPkgName());
                     writeLog("Proxy App: " + app.getAppLabel());
