@@ -1,6 +1,6 @@
 session_name smart
 welcome_info 欢迎使用smart!
-debug true
+debug false
 
 ip 172.25.0.1
 # dns 223.5.5.5

@@ -265,7 +265,7 @@ public class LocalVpnService extends VpnService implements Runnable {
                 TCPHeader tcpHeader = m_TCPHeader;
                 tcpHeader.m_Offset = ipHeader.getHeaderLength();
                 if (ipHeader.getSourceIP() == LOCAL_IP) {
-                    if (tcpHeader.getSourcePort() == m_TcpProxyServer.Port) {// 收到本地TCP服务器数据
+                    if (tcpHeader.getSourcePort() == m_TcpProxyServer.Port) { // 收到本地TCP服务器数据
                         NatSession session = NatSessionManager.getSession(tcpHeader.getDestinationPort());
                         if (session != null) {
                             ipHeader.setSourceIP(ipHeader.getDestinationIP());
@@ -273,6 +273,8 @@ public class LocalVpnService extends VpnService implements Runnable {
                             ipHeader.setDestinationIP(LOCAL_IP);
 
                             CommonMethods.ComputeTCPChecksum(ipHeader, tcpHeader);
+
+                            // write to tun
                             m_VPNOutputStream.write(ipHeader.m_Data, ipHeader.m_Offset, size);
                             m_ReceivedBytes += size;
                         }
@@ -285,11 +287,11 @@ public class LocalVpnService extends VpnService implements Runnable {
                         }
 
                         session.LastNanoTime = System.nanoTime();
-                        session.PacketSent++;// 注意顺序
+                        session.PacketSent++; // 注意顺序
 
                         int tcpDataSize = ipHeader.getDataLength() - tcpHeader.getHeaderLength();
                         if (session.PacketSent == 2 && tcpDataSize == 0) {
-                            return;// 丢弃tcp握手的第二个ACK报文。因为客户端发数据的时候也会带上ACK，这样可以在服务器Accept之前分析出HOST信息。
+                            return; // 丢弃tcp握手的第二个ACK报文。因为客户端发数据的时候也会带上ACK，这样可以在服务器Accept之前分析出HOST信息。
                         }
 
                         // 分析数据，找到host
@@ -308,7 +310,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 
                         CommonMethods.ComputeTCPChecksum(ipHeader, tcpHeader);
                         m_VPNOutputStream.write(ipHeader.m_Data, ipHeader.m_Offset, size);
-                        session.BytesSent += tcpDataSize;//注意顺序
+                        session.BytesSent += tcpDataSize; // 注意顺序
                         m_SentBytes += size;
                     }
                 }

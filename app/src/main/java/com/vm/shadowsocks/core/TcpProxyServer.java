@@ -92,14 +92,14 @@ public class TcpProxyServer implements Runnable {
         }
     }
 
-    InetSocketAddress getDestAddress(SocketChannel localChannel) {
+    private InetSocketAddress getDestAddress(SocketChannel localChannel) {
         short portKey = (short) localChannel.socket().getPort();
         NatSession session = NatSessionManager.getSession(portKey);
         if (session != null) {
             String action = ProxyConfig.Instance.needProxy(session.RemoteHost, session.RemoteIP);
             if (action.equals("proxy")) {
-                // if (ProxyConfig.IS_DEBUG)
-                    // LocalVpnService.Instance.writeLog("%d/%d:[PROXY] %s=>%s:%d\n", NatSessionManager.getSessionCount(), Tunnel.SessionCount, session.RemoteHost, CommonMethods.ipIntToString(session.RemoteIP), session.RemotePort & 0xFFFF);
+                if (ProxyConfig.IS_DEBUG)
+                    LocalVpnService.Instance.writeLog("%d/%d:[PROXY] %s=>%s:%d\n", NatSessionManager.getSessionCount(), Tunnel.SessionCount, session.RemoteHost, CommonMethods.ipIntToString(session.RemoteIP), session.RemotePort & 0xFFFF);
                 return InetSocketAddress.createUnresolved(session.RemoteHost, session.RemotePort & 0xFFFF);
             } else if (action.equals("direct")) {
                 return new InetSocketAddress(localChannel.socket().getInetAddress(), session.RemotePort & 0xFFFF);

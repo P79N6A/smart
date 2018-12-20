@@ -108,7 +108,7 @@ public class ProxyConfig {
         m_IPCidrMap = new HashMap<String, String>();
 
         m_Timer = new Timer();
-        m_Timer.schedule(m_Task, 120000, 120000);//每两分钟刷新一次。
+        m_Timer.schedule(m_Task, 120000, 120000); // 每两分钟刷新一次。
     }
 
     TimerTask m_Task = new TimerTask() {
@@ -117,7 +117,7 @@ public class ProxyConfig {
             refreshProxyServer();//定时更新dns缓存
         }
 
-        //定时更新dns缓存
+        // 定时更新dns缓存
         void refreshProxyServer() {
             try {
                 for (int i = 0; i < m_ProxyList.size(); i++) {
@@ -205,23 +205,17 @@ public class ProxyConfig {
     private String getDomainState(String domain) {
         domain = domain.toLowerCase();
         if (m_DomainMap.get(domain) != null) {
-            if (ProxyConfig.IS_DEBUG)
-                LocalVpnService.Instance.writeLog("getDomainState m_DomainMap " + domain + " -> " + m_DomainMap.get(domain));
             return m_DomainMap.get(domain);
         }
 
         for (String key : m_DomainSuffixMap.keySet()) {
             if (domain.endsWith(key)) {
-                if (ProxyConfig.IS_DEBUG)
-                    LocalVpnService.Instance.writeLog("getDomainState m_DomainSuffixMap " + domain + ":" + key + " -> " + m_DomainSuffixMap.get(key));
                 return m_DomainSuffixMap.get(key);
             }
         }
 
         for (String key : m_DomainKeywordMap.keySet()) {
             if (domain.contains(key)) {
-                if (ProxyConfig.IS_DEBUG)
-                    LocalVpnService.Instance.writeLog("getDomainState m_DomainKeywordMap " + domain + ":" + key + " -> " + m_DomainKeywordMap.get(key));
                 return m_DomainKeywordMap.get(key);
             }
         }
@@ -230,8 +224,9 @@ public class ProxyConfig {
     }
 
     public String needProxy(String host, int ip) {
+        // 无视配置文件，都走代理
         if (globalMode)
-            return "proxy"; // TODO block
+            return "proxy";
 
         if (host != null) {
             String action = getDomainState(host);
@@ -251,7 +246,7 @@ public class ProxyConfig {
             // ip country
             String countryIsoCode = LocalVpnService.Instance.getCountryIsoCodeByIP(ipStr);
             if (countryIsoCode != null) {
-                countryIsoCode = countryIsoCode.toLowerCase();// 统一使用小写
+                countryIsoCode = countryIsoCode.toLowerCase(); // 统一使用小写
                 if (m_IPCountryMap.get(countryIsoCode) != null) {
                     if (ProxyConfig.IS_DEBUG)
                         LocalVpnService.Instance.writeLog("m_IPCountryMap " + ipStr + " " + countryIsoCode + " -> " + m_IPCountryMap.get(countryIsoCode));
